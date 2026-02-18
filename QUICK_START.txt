@@ -1,0 +1,78 @@
+═══════════════════════════════════════════════════════════════
+    RESTAURANT-IQ - QUICK START (5 MINUTES)
+═══════════════════════════════════════════════════════════════
+
+STEP 1: CREATE SUPABASE PROJECT
+─────────────────────────────────────────────────────────────
+→ Go to: https://supabase.com/dashboard
+→ Click: "New Project"
+→ Name: restaurant-iq
+→ Password: [CREATE & SAVE IT!]
+→ Region: Europe West (London)
+→ Wait 2 minutes...
+
+STEP 2: OPEN SQL EDITOR
+─────────────────────────────────────────────────────────────
+→ Click "SQL Editor" (left sidebar)
+→ Click "New query" button
+
+STEP 3: COPY THE RIGHT FILE
+─────────────────────────────────────────────────────────────
+✅ USE THIS FILE:
+   SUPABASE_SINGLE_DATABASE.sql (16 KB)
+
+❌ DON'T USE THESE:
+   schema.ts (TypeScript - won't work!)
+   SUPABASE_COMPLETE_SETUP.sql (old approach)
+   SUPABASE_TRIAL_EMPTY.sql (old approach)
+
+STEP 4: PASTE & RUN
+─────────────────────────────────────────────────────────────
+→ Open SUPABASE_SINGLE_DATABASE.sql
+→ Select ALL (Ctrl+A / Cmd+A)
+→ Copy (Ctrl+C / Cmd+C)
+→ Paste in SQL Editor (Ctrl+V / Cmd+V)
+→ Click "Run" button (or press F5)
+→ Wait 10-30 seconds
+→ ✅ Success!
+
+STEP 5: VERIFY
+─────────────────────────────────────────────────────────────
+→ Click "Table Editor"
+→ You should see 11 tables:
+   • restaurants (1 row: "The Golden Fork")
+   • users
+   • cost_categories (12 rows)
+   • monthly_data
+   • ingredients
+   • suppliers
+   • menu_items
+   • ... and 4 more
+
+STEP 6: GET CONNECTION STRING
+─────────────────────────────────────────────────────────────
+→ Click "Project Settings" (gear icon)
+→ Click "Database" tab
+→ Find "Connection string"
+→ Select "URI" mode
+→ Copy the string
+→ Replace [YOUR-PASSWORD] with your actual password
+
+Example:
+postgresql://postgres:YourPassword123@db.xxxxx.supabase.co:5432/postgres
+
+STEP 7: SHARE WITH ME
+─────────────────────────────────────────────────────────────
+Just send me the connection string!
+
+I'll deploy Restaurant-IQ in 2 minutes! 🚀
+
+═══════════════════════════════════════════════════════════════
+    QUESTIONS?
+═══════════════════════════════════════════════════════════════
+→ Which file? SUPABASE_SINGLE_DATABASE.sql (NOT schema.ts!)
+→ How big? 16 KB (around 550 lines)
+→ Where to paste? Supabase SQL Editor
+→ What happens? Creates 11 tables + demo data
+→ How long? 5 minutes total
+═══════════════════════════════════════════════════════════════
