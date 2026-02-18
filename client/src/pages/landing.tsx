@@ -30,16 +30,16 @@ export default function Landing() {
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
                 <Utensils className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold">Flivio</span>
+              <span className="text-lg font-bold">Restaurant-IQ</span>
             </div>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/app">
+            <Link href="/login">
               <Button variant="outline" data-testid="button-login">Log In</Button>
             </Link>
-            <Link href="/app?mode=demo">
-              <Button data-testid="button-try-demo">Try Demo</Button>
+            <Link href="/register">
+              <Button data-testid="button-try-demo">Get Started</Button>
             </Link>
           </div>
         </div>
@@ -56,7 +56,7 @@ export default function Landing() {
               Know exactly where every pound goes in your restaurant
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Flivio gives you complete visibility over your costs, margins and supplier risks.
+              Restaurant-IQ gives you complete visibility over your costs, margins and supplier risks.
               Stop guessing, start optimising - with real data from your kitchen to your bottom line.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -80,7 +80,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold">Everything you need to control your costs</h2>
-            <p className="text-muted-foreground mt-2 max-w-xl mx-auto">From ingredient pricing to supplier risk alerts, Flivio covers every aspect of restaurant financial management.</p>
+            <p className="text-muted-foreground mt-2 max-w-xl mx-auto">From ingredient pricing to supplier risk alerts, Restaurant-IQ covers every aspect of restaurant financial management.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((f) => (
@@ -101,7 +101,7 @@ export default function Landing() {
       <section className="py-16 md:py-20 border-t bg-muted/30" data-testid="section-how-it-works">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold">How Flivio works</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">How Restaurant-IQ works</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
@@ -166,9 +166,9 @@ export default function Landing() {
             <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
               <Utensils className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-semibold">Flivio</span>
+            <span className="text-sm font-semibold">Restaurant-IQ</span>
           </div>
-          <p className="text-xs text-muted-foreground">Flivio Ltd. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">Restaurant-IQ Ltd. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -12,6 +12,12 @@ export async function seedDatabase() {
     log(`Seeded ${DEFAULT_COST_CATEGORIES.length} cost categories`);
   }
 
+  // Skip demo data if this is a trial environment
+  if (process.env.ENVIRONMENT === 'trial') {
+    log("Trial environment detected - skipping demo data seeding");
+    return;
+  }
+
   const restaurantCount = await storage.getRestaurantCount();
   if (restaurantCount > 0) {
     log("Database already seeded, skipping restaurant data");

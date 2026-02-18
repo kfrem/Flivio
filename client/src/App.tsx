@@ -9,6 +9,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
+import Admin from "@/pages/admin";
 import Dashboard from "@/pages/dashboard";
 import ProcessFlow from "@/pages/process-flow";
 import CostAnalysis from "@/pages/cost-analysis";
@@ -29,6 +32,7 @@ function AppRouter() {
   return (
     <Switch>
       <Route path="/app" component={Dashboard} />
+      <Route path="/app/admin" component={Admin} />
       <Route path="/app/quick-assessment" component={QuickAssessment} />
       <Route path="/app/menu-costing" component={MenuCosting} />
       <Route path="/app/supplier-risk" component={SupplierRisk} />
@@ -80,6 +84,8 @@ function RootRouter() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route component={NotFound} />
     </Switch>
   );

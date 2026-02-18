@@ -1,4 +1,4 @@
-# Flivio - Restaurant Intelligence Platform
+# Restaurant-IQ - Restaurant Intelligence Platform
 
 A SaaS restaurant intelligence platform for cost and profit optimisation. Helps restaurant owners visualise costs, track margins, analyse delivery platform profitability, monitor supplier risks, simulate scenarios, and receive data-driven recommendations.
 
@@ -38,8 +38,8 @@ A SaaS restaurant intelligence platform for cost and profit optimisation. Helps 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/kfrem/Flivio.git
-   cd Flivio
+   git clone https://github.com/kfrem/Restaurant-IQ.git
+   cd Restaurant-IQ
    ```
 
 2. Install dependencies:

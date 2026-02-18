@@ -93,7 +93,7 @@ export function AppSidebar() {
               <Utensils className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold leading-tight">Flivio</span>
+              <span className="text-sm font-semibold leading-tight">Restaurant-IQ</span>
               <span className="text-xs text-muted-foreground leading-tight">Restaurant Intelligence</span>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4">
         <div className="text-xs text-muted-foreground">
-          Flivio v2.0
+          Restaurant-IQ v2.0
         </div>
       </SidebarFooter>
     </Sidebar>

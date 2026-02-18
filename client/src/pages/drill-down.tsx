@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearch } from "wouter";
-import type { MonthlyData, Ingredient, Supplier, MenuItem } from "@shared/schema";
+import type { MonthlyData, Ingredient, Supplier, MenuItem, MenuItemIngredient } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import {
   ArrowLeft, ArrowRight, TrendingUp, TrendingDown,
-  Layers, ChevronRight,
+  Layers, ChevronRight, Package, ShoppingCart,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -37,6 +38,8 @@ export default function DrillDown() {
   const params = new URLSearchParams(search);
   const category = params.get("category") || "foodCost";
   const label = params.get("label") || COST_LABELS[category] || category;
+  const level = params.get("level") || "category"; // category, ingredient, supplier, menuItem, transaction
+  const itemId = params.get("itemId") ? parseInt(params.get("itemId")!) : null;
 
   const { data: monthlyDataAll = [] } = useQuery<MonthlyData[]>({ queryKey: ["/api/monthly-data"] });
   const { data: restaurant } = useQuery<any>({ queryKey: ["/api/restaurants/current"] });

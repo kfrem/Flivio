@@ -3,6 +3,7 @@ import { db } from "./db";
 import {
   restaurants, monthlyData, costCategories, restaurantCostItems,
   suppliers, ingredients, supplierIngredients, menuItems, menuItemIngredients, promotions,
+  users,
   type Restaurant, type InsertRestaurant,
   type MonthlyData, type InsertMonthlyData,
   type CostCategory, type InsertCostCategory,
@@ -66,6 +67,11 @@ export interface IStorage {
   createPromotion(data: InsertPromotion): Promise<Promotion>;
   updatePromotion(id: number, data: Partial<InsertPromotion>): Promise<Promotion>;
   deletePromotion(id: number): Promise<void>;
+
+  // User methods
+  getUserById(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(data: InsertUser): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -247,6 +253,22 @@ export class DatabaseStorage implements IStorage {
 
   async deletePromotion(id: number): Promise<void> {
     await db.delete(promotions).where(eq(promotions.id, id));
+  }
+
+  // User methods
+  async getUserById(id: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.id, id));
+    return result;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.username, username));
+    return result;
+  }
+
+  async createUser(data: InsertUser): Promise<User> {
+    const [result] = await db.insert(users).values(data).returning();
+    return result;
   }
 }
 

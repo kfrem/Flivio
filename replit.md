@@ -1,10 +1,10 @@
-# Flivio - Restaurant Intelligence Platform
+# Restaurant-IQ - Restaurant Intelligence Platform
 
 ## Overview
 A SaaS restaurant intelligence platform for cost & profit optimisation. Helps restaurant owners visualise costs, track margins, analyse delivery platform profitability, monitor supplier risks, simulate scenarios, and receive data-driven recommendations. Features VAT support (input/output rates per item), drillable reports, and expense intelligence analysis.
 
 ## Recent Changes
-- 2026-02-18: Rebranded from RestaurantIQ to Flivio throughout (sidebar, footer, meta tags, landing page)
+- 2026-02-18: Rebranded from RestaurantIQ to Restaurant-IQ throughout (sidebar, footer, meta tags, landing page)
 - 2026-02-18: Built SaaS landing page at `/` with hero, features, pricing, how-it-works sections
 - 2026-02-18: Restructured routing: public landing at `/`, app at `/app/*`
 - 2026-02-18: Added Delivery Platform Costs page (`/app/delivery-platforms`) with commission analysis, profitability comparison
@@ -101,4 +101,4 @@ A SaaS restaurant intelligence platform for cost & profit optimisation. Helps re
 - Uses £ (GBP) currency formatting
 - Orange primary color theme (hsl 24, 95%, 53%)
 - Dark mode support via class-based toggle
-- Brand name: Flivio
+- Brand name: Restaurant-IQ
