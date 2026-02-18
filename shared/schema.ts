@@ -10,6 +10,11 @@ export const restaurants = pgTable("restaurants", {
   location: text("location").notNull(),
   seatingCapacity: integer("seating_capacity").notNull(),
   avgMonthlyCovers: integer("avg_monthly_covers").notNull(),
+  tenantType: text("tenant_type").notNull().default("trial"), // 'demo', 'trial', or 'paid'
+  subscriptionTier: text("subscription_tier"), // 'starter', 'professional', 'enterprise'
+  subscriptionStatus: text("subscription_status").default("active"), // 'active', 'cancelled', 'expired'
+  trialExpiresAt: timestamp("trial_expires_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const monthlyData = pgTable("monthly_data", {
