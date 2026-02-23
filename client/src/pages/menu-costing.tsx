@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { MenuItem, Ingredient, MenuItemIngredient } from "@shared/schema";
@@ -72,12 +72,6 @@ export default function MenuCosting() {
     },
   });
 
-  const menuAnalysis = useMemo(() => {
-    return menuItems.map((item) => {
-      const cost = 0;
-      return { ...item, costPerServe: cost, profitPerServe: item.sellingPrice - cost, margin: cost > 0 ? ((item.sellingPrice - cost) / item.sellingPrice) * 100 : 100 };
-    });
-  }, [menuItems]);
 
   const getRecipeCost = (ingredients: MenuItemIngredient[]) => {
     let total = 0;

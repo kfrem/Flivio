@@ -33,7 +33,7 @@ function generateRecommendations(data: MonthlyData): Recommendation[] {
   const margin = ((data.revenue - totalCost) / data.revenue) * 100;
 
   if (foodPct > 32) {
-    const savingTarget = data.foodCost * ((foodPct - 30) / 100);
+    const savingTarget = data.revenue * (foodPct - 30) / 100;
     recommendations.push({
       id: "food-cost",
       title: "Reduce Food Cost Percentage",
@@ -47,7 +47,7 @@ function generateRecommendations(data: MonthlyData): Recommendation[] {
   }
 
   if (labourPct > 30) {
-    const savingTarget = data.labourCost * ((labourPct - 28) / 100);
+    const savingTarget = data.revenue * (labourPct - 28) / 100;
     recommendations.push({
       id: "labour-cost",
       title: "Optimise Labour Scheduling",

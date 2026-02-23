@@ -89,11 +89,12 @@ export function calculateProcessMetrics(data: MonthlyData | null) {
     data.rentCost + data.marketingCost + data.suppliesCost +
     data.technologyCost + data.wasteCost;
   const grossProfit = data.revenue - totalCost;
-  const grossMargin = (grossProfit / data.revenue) * 100;
-  const foodCostPct = (data.foodCost / data.revenue) * 100;
-  const labourCostPct = (data.labourCost / data.revenue) * 100;
-  const energyCostPct = (data.energyCost / data.revenue) * 100;
-  const wastePct = (data.wasteCost / data.revenue) * 100;
+  const rev = data.revenue || 1; // guard against division by zero
+  const grossMargin = (grossProfit / rev) * 100;
+  const foodCostPct = (data.foodCost / rev) * 100;
+  const labourCostPct = (data.labourCost / rev) * 100;
+  const energyCostPct = (data.energyCost / rev) * 100;
+  const wastePct = (data.wasteCost / rev) * 100;
 
   return {
     totalCost,
