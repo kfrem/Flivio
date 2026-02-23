@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupAuth } from "./auth";
 import { serveStatic } from "./static";
@@ -8,10 +9,23 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 
+// Enforce a real secret in production
+const sessionSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === "production" && !sessionSecret) {
+  throw new Error("SESSION_SECRET environment variable must be set in production");
+}
+
+// Persistent session store backed by PostgreSQL
+const PgSession = connectPgSimple(session);
+const sessionStore = process.env.DATABASE_URL
+  ? new PgSession({ conString: process.env.DATABASE_URL, createTableIfMissing: true })
+  : undefined; // falls back to MemoryStore in environments without a DB URL
+
 // Session configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "flivio-secret-key-change-in-production",
+    store: sessionStore,
+    secret: sessionSecret || "flivio-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {

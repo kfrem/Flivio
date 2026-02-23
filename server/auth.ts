@@ -33,6 +33,11 @@ export async function setupAuth(app: Express) {
 
       const { username, password } = parsed.data;
 
+      // Enforce minimum password strength
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
