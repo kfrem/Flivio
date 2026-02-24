@@ -6,7 +6,7 @@ import {
   SlidersHorizontal,
   Lightbulb,
   PlusCircle,
-  Utensils,
+  PoundSterling,
   Sparkles,
   ChefHat,
   ShieldAlert,
@@ -15,6 +15,8 @@ import {
   FileSpreadsheet,
   Truck,
   Brain,
+  Star,
+  Calculator,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +39,7 @@ const mainNav = [
 
 const costingNav = [
   { title: "Menu & Recipes", url: "/app/menu-costing", icon: ChefHat },
+  { title: "Menu Engineering", url: "/app/menu-engineering", icon: Star },
   { title: "Supplier Risk", url: "/app/supplier-risk", icon: ShieldAlert },
   { title: "Cost Classification", url: "/app/cost-classification", icon: Layers },
   { title: "Delivery Platforms", url: "/app/delivery-platforms", icon: Truck },
@@ -44,6 +47,7 @@ const costingNav = [
 ];
 
 const analysisNav = [
+  { title: "Breakeven Analysis", url: "/app/breakeven", icon: Calculator },
   { title: "Expense Intelligence", url: "/app/expense-intelligence", icon: Brain },
   { title: "Process Flow", url: "/app/process-flow", icon: GitBranch },
   { title: "Cost Analysis", url: "/app/cost-analysis", icon: BarChart3 },
@@ -90,10 +94,10 @@ export function AppSidebar() {
         <Link href="/app" data-testid="link-home">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
-              <Utensils className="h-5 w-5 text-primary-foreground" />
+              <PoundSterling className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold leading-tight">Restaurant-IQ</span>
+              <span className="text-sm font-semibold leading-tight">Food Profit Flow</span>
               <span className="text-xs text-muted-foreground leading-tight">Restaurant Intelligence</span>
             </div>
           </div>
@@ -110,7 +114,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="p-4">
         <div className="text-xs text-muted-foreground">
-          Restaurant-IQ v2.0
+          Food Profit Flow v1.0
         </div>
       </SidebarFooter>
     </Sidebar>
