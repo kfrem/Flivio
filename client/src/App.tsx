@@ -27,6 +27,11 @@ import DataImport from "@/pages/data-import";
 import DeliveryPlatforms from "@/pages/delivery-platforms";
 import ExpenseIntelligence from "@/pages/expense-intelligence";
 import DrillDown from "@/pages/drill-down";
+import MenuEngineering from "@/pages/menu-engineering";
+import Breakeven from "@/pages/breakeven";
+import PerformanceComparison from "@/pages/performance-comparison";
+import FranchiseHub from "@/pages/franchise-hub";
+import SupplierIntelligence from "@/pages/supplier-intelligence";
 
 function AppRouter() {
   return (
@@ -35,6 +40,8 @@ function AppRouter() {
       <Route path="/app/admin" component={Admin} />
       <Route path="/app/quick-assessment" component={QuickAssessment} />
       <Route path="/app/menu-costing" component={MenuCosting} />
+      <Route path="/app/menu-engineering" component={MenuEngineering} />
+      <Route path="/app/breakeven" component={Breakeven} />
       <Route path="/app/supplier-risk" component={SupplierRisk} />
       <Route path="/app/cost-classification" component={CostClassification} />
       <Route path="/app/promotions" component={PromotionsPage} />
@@ -47,6 +54,9 @@ function AppRouter() {
       <Route path="/app/add-data" component={AddData} />
       <Route path="/app/data-import" component={DataImport} />
       <Route path="/app/drill-down" component={DrillDown} />
+      <Route path="/app/performance-comparison" component={PerformanceComparison} />
+      <Route path="/app/franchise-hub" component={FranchiseHub} />
+      <Route path="/app/supplier-intelligence" component={SupplierIntelligence} />
       <Route component={NotFound} />
     </Switch>
   );

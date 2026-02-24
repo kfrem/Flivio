@@ -14,6 +14,7 @@ export const restaurants = pgTable("restaurants", {
   subscriptionTier: text("subscription_tier"), // 'starter', 'professional', 'enterprise'
   subscriptionStatus: text("subscription_status").default("active"), // 'active', 'cancelled', 'expired'
   trialExpiresAt: timestamp("trial_expires_at"),
+  franchiseGroupId: integer("franchise_group_id"), // null = independent restaurant
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -160,6 +161,7 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").notNull().default("individual"), // 'individual' | 'franchisee' | 'franchisor' | 'admin'
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -169,6 +171,111 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// ── Weekly Data ─────────────────────────────────────────────────────────────
+export const weeklyData = pgTable("weekly_data", {
+  id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull(),
+  weekNumber: integer("week_number").notNull(), // ISO week 1-53
+  year: integer("year").notNull(),
+  revenue: real("revenue").notNull(),
+  foodCost: real("food_cost").notNull(),
+  labourCost: real("labour_cost").notNull(),
+  energyCost: real("energy_cost").notNull(),
+  rentCost: real("rent_cost").notNull(),
+  marketingCost: real("marketing_cost").notNull(),
+  suppliesCost: real("supplies_cost").notNull(),
+  technologyCost: real("technology_cost").notNull(),
+  wasteCost: real("waste_cost").notNull(),
+  deliveryRevenue: real("delivery_revenue").notNull(),
+  dineInRevenue: real("dine_in_revenue").notNull(),
+  takeawayRevenue: real("takeaway_revenue").notNull(),
+  totalCovers: integer("total_covers").notNull(),
+  avgTicketSize: real("avg_ticket_size").notNull(),
+  repeatCustomerRate: real("repeat_customer_rate").notNull(),
+});
+
+// ── Franchise Groups (the brand entity) ─────────────────────────────────────
+export const franchiseGroups = pgTable("franchise_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  ownerId: varchar("owner_id").notNull(), // user who manages this brand
+  // 'recommended' = advisory only, 'required' = must use approved suppliers
+  approvedSupplierPolicy: text("approved_supplier_policy").notNull().default("recommended"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ── Franchise Memberships (restaurants ↔ groups) ─────────────────────────────
+export const franchiseMemberships = pgTable("franchise_memberships", {
+  id: serial("id").primaryKey(),
+  franchiseGroupId: integer("franchise_group_id").notNull(),
+  restaurantId: integer("restaurant_id").notNull(),
+  role: text("role").notNull().default("franchisee"), // 'franchisor' | 'franchisee'
+  joinedAt: timestamp("joined_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+// ── Franchise Approved Suppliers (set by franchisor) ─────────────────────────
+export const franchiseApprovedSuppliers = pgTable("franchise_approved_suppliers", {
+  id: serial("id").primaryKey(),
+  franchiseGroupId: integer("franchise_group_id").notNull(),
+  name: text("name").notNull(),               // supplier name
+  category: text("category").notNull(),       // produce|protein|dairy|etc.
+  contactInfo: text("contact_info"),
+  ingredientName: text("ingredient_name"),    // which ingredient they supply
+  contractedPrice: real("contracted_price"),  // negotiated rate, optional
+  unit: text("unit"),                         // kg|litre|pack|etc.
+  isRequired: boolean("is_required").notNull().default(false), // required vs recommended
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ── Supplier Price Reports (franchisees submit actual prices paid) ────────────
+// This is the intelligence pool that powers price variance analysis
+export const supplierPriceReports = pgTable("supplier_price_reports", {
+  id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull(),
+  franchiseGroupId: integer("franchise_group_id").notNull(),
+  ingredientName: text("ingredient_name").notNull(),
+  supplierName: text("supplier_name").notNull(),
+  unitPrice: real("unit_price").notNull(),
+  unit: text("unit").notNull(),
+  month: integer("month").notNull(), // 1-12
+  year: integer("year").notNull(),
+  reportedAt: timestamp("reported_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ── User-Restaurant Access (multi-restaurant access control) ─────────────────
+export const userRestaurantAccess = pgTable("user_restaurant_access", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  restaurantId: integer("restaurant_id").notNull(),
+  role: text("role").notNull().default("owner"), // 'owner' | 'manager' | 'viewer'
+  grantedAt: timestamp("granted_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Insert schemas
+export const insertWeeklyDataSchema = createInsertSchema(weeklyData).omit({ id: true });
+export const insertFranchiseGroupSchema = createInsertSchema(franchiseGroups).omit({ id: true, createdAt: true });
+export const insertFranchiseMembershipSchema = createInsertSchema(franchiseMemberships).omit({ id: true, joinedAt: true });
+export const insertFranchiseApprovedSupplierSchema = createInsertSchema(franchiseApprovedSuppliers).omit({ id: true, createdAt: true });
+export const insertSupplierPriceReportSchema = createInsertSchema(supplierPriceReports).omit({ id: true, reportedAt: true });
+export const insertUserRestaurantAccessSchema = createInsertSchema(userRestaurantAccess).omit({ id: true, grantedAt: true });
+
+// Types
+export type WeeklyData = typeof weeklyData.$inferSelect;
+export type InsertWeeklyData = z.infer<typeof insertWeeklyDataSchema>;
+export type FranchiseGroup = typeof franchiseGroups.$inferSelect;
+export type InsertFranchiseGroup = z.infer<typeof insertFranchiseGroupSchema>;
+export type FranchiseMembership = typeof franchiseMemberships.$inferSelect;
+export type InsertFranchiseMembership = z.infer<typeof insertFranchiseMembershipSchema>;
+export type FranchiseApprovedSupplier = typeof franchiseApprovedSuppliers.$inferSelect;
+export type InsertFranchiseApprovedSupplier = z.infer<typeof insertFranchiseApprovedSupplierSchema>;
+export type SupplierPriceReport = typeof supplierPriceReports.$inferSelect;
+export type InsertSupplierPriceReport = z.infer<typeof insertSupplierPriceReportSchema>;
+export type UserRestaurantAccess = typeof userRestaurantAccess.$inferSelect;
+export type InsertUserRestaurantAccess = z.infer<typeof insertUserRestaurantAccessSchema>;
 
 export const DEFAULT_COST_CATEGORIES: Omit<InsertCostCategory, "isDefault">[] = [
   { name: "Food & Ingredients", key: "foodCost", description: "Raw ingredients, beverages, and consumables", defaultPercentage: 30, icon: "ShoppingCart", processStage: "procurement", classification: "direct", sortOrder: 1 },
