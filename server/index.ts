@@ -4,6 +4,9 @@ import { registerRoutes } from "./routes";
 import { setupAuth } from "./auth";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { db } from "./db";
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -76,6 +79,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migrations on startup so tables always exist
+  const migrationsFolder = process.env.NODE_ENV === "production"
+    ? path.join(__dirname, "migrations")
+    : path.join(process.cwd(), "migrations");
+
+  try {
+    await migrate(db, { migrationsFolder });
+    log("Database migrations completed");
+  } catch (err) {
+    log(`Migration warning: ${err}`);
+    // Don't crash — tables may already exist (e.g. drizzle-kit push was used)
+  }
+
   // Setup authentication
   await setupAuth(app);
   
