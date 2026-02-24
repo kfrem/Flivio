@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "./db";
 import {
   restaurants, monthlyData, costCategories, restaurantCostItems,
   suppliers, ingredients, supplierIngredients, menuItems, menuItemIngredients, promotions,
-  users,
+  users, weeklyData, franchiseGroups, franchiseMemberships, franchiseApprovedSuppliers,
+  supplierPriceReports, userRestaurantAccess,
   type Restaurant, type InsertRestaurant,
   type MonthlyData, type InsertMonthlyData,
   type CostCategory, type InsertCostCategory,
@@ -15,6 +16,11 @@ import {
   type MenuItemIngredient, type InsertMenuItemIngredient,
   type Promotion, type InsertPromotion,
   type User, type InsertUser,
+  type WeeklyData, type InsertWeeklyData,
+  type FranchiseGroup, type InsertFranchiseGroup,
+  type FranchiseMembership, type InsertFranchiseMembership,
+  type FranchiseApprovedSupplier, type InsertFranchiseApprovedSupplier,
+  type SupplierPriceReport, type InsertSupplierPriceReport,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -72,6 +78,38 @@ export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(data: InsertUser): Promise<User>;
+
+  // Weekly Data
+  getWeeklyData(restaurantId: number): Promise<WeeklyData[]>;
+  getWeeklyDataByPeriod(restaurantId: number, weekNumber: number, year: number): Promise<WeeklyData | undefined>;
+  createWeeklyData(data: InsertWeeklyData): Promise<WeeklyData>;
+
+  // Franchise Groups
+  getFranchiseGroup(id: number): Promise<FranchiseGroup | undefined>;
+  getFranchiseGroupsByOwner(ownerId: string): Promise<FranchiseGroup[]>;
+  createFranchiseGroup(data: InsertFranchiseGroup): Promise<FranchiseGroup>;
+  updateFranchiseGroup(id: number, data: Partial<InsertFranchiseGroup>): Promise<FranchiseGroup>;
+
+  // Franchise Memberships
+  getFranchiseMemberships(franchiseGroupId: number): Promise<FranchiseMembership[]>;
+  getRestaurantFranchiseMembership(restaurantId: number): Promise<FranchiseMembership | undefined>;
+  createFranchiseMembership(data: InsertFranchiseMembership): Promise<FranchiseMembership>;
+  deleteFranchiseMembership(id: number): Promise<void>;
+  updateFranchiseMembership(id: number, data: Partial<InsertFranchiseMembership>): Promise<FranchiseMembership>;
+
+  // Franchise Approved Suppliers
+  getFranchiseApprovedSuppliers(franchiseGroupId: number): Promise<FranchiseApprovedSupplier[]>;
+  createFranchiseApprovedSupplier(data: InsertFranchiseApprovedSupplier): Promise<FranchiseApprovedSupplier>;
+  updateFranchiseApprovedSupplier(id: number, data: Partial<InsertFranchiseApprovedSupplier>): Promise<FranchiseApprovedSupplier>;
+  deleteFranchiseApprovedSupplier(id: number): Promise<void>;
+
+  // Supplier Price Reports
+  getSupplierPriceReports(franchiseGroupId: number): Promise<SupplierPriceReport[]>;
+  getRestaurantSupplierPriceReports(restaurantId: number): Promise<SupplierPriceReport[]>;
+  createSupplierPriceReport(data: InsertSupplierPriceReport): Promise<SupplierPriceReport>;
+
+  // Franchise Network Analytics
+  getFranchiseNetworkMonthlyData(franchiseGroupId: number): Promise<{ restaurant: Restaurant; monthlyData: MonthlyData[] }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -268,6 +306,123 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(data: InsertUser): Promise<User> {
     const [result] = await db.insert(users).values(data).returning();
+    return result;
+  }
+
+  // ── Weekly Data ─────────────────────────────────────────────────────────────
+  async getWeeklyData(restaurantId: number): Promise<WeeklyData[]> {
+    return db.select().from(weeklyData).where(eq(weeklyData.restaurantId, restaurantId));
+  }
+
+  async getWeeklyDataByPeriod(restaurantId: number, weekNumber: number, year: number): Promise<WeeklyData | undefined> {
+    const [result] = await db.select().from(weeklyData).where(
+      and(
+        eq(weeklyData.restaurantId, restaurantId),
+        eq(weeklyData.weekNumber, weekNumber),
+        eq(weeklyData.year, year)
+      )
+    );
+    return result;
+  }
+
+  async createWeeklyData(data: InsertWeeklyData): Promise<WeeklyData> {
+    const [result] = await db.insert(weeklyData).values(data).returning();
+    return result;
+  }
+
+  // ── Franchise Groups ─────────────────────────────────────────────────────────
+  async getFranchiseGroup(id: number): Promise<FranchiseGroup | undefined> {
+    const [result] = await db.select().from(franchiseGroups).where(eq(franchiseGroups.id, id));
+    return result;
+  }
+
+  async getFranchiseGroupsByOwner(ownerId: string): Promise<FranchiseGroup[]> {
+    return db.select().from(franchiseGroups).where(eq(franchiseGroups.ownerId, ownerId));
+  }
+
+  async createFranchiseGroup(data: InsertFranchiseGroup): Promise<FranchiseGroup> {
+    const [result] = await db.insert(franchiseGroups).values(data).returning();
+    return result;
+  }
+
+  async updateFranchiseGroup(id: number, data: Partial<InsertFranchiseGroup>): Promise<FranchiseGroup> {
+    const [result] = await db.update(franchiseGroups).set(data).where(eq(franchiseGroups.id, id)).returning();
+    return result;
+  }
+
+  // ── Franchise Memberships ────────────────────────────────────────────────────
+  async getFranchiseMemberships(franchiseGroupId: number): Promise<FranchiseMembership[]> {
+    return db.select().from(franchiseMemberships).where(
+      and(eq(franchiseMemberships.franchiseGroupId, franchiseGroupId), eq(franchiseMemberships.isActive, true))
+    );
+  }
+
+  async getRestaurantFranchiseMembership(restaurantId: number): Promise<FranchiseMembership | undefined> {
+    const [result] = await db.select().from(franchiseMemberships).where(
+      and(eq(franchiseMemberships.restaurantId, restaurantId), eq(franchiseMemberships.isActive, true))
+    );
+    return result;
+  }
+
+  async createFranchiseMembership(data: InsertFranchiseMembership): Promise<FranchiseMembership> {
+    const [result] = await db.insert(franchiseMemberships).values(data).returning();
+    return result;
+  }
+
+  async updateFranchiseMembership(id: number, data: Partial<InsertFranchiseMembership>): Promise<FranchiseMembership> {
+    const [result] = await db.update(franchiseMemberships).set(data).where(eq(franchiseMemberships.id, id)).returning();
+    return result;
+  }
+
+  async deleteFranchiseMembership(id: number): Promise<void> {
+    await db.update(franchiseMemberships).set({ isActive: false }).where(eq(franchiseMemberships.id, id));
+  }
+
+  // ── Franchise Approved Suppliers ─────────────────────────────────────────────
+  async getFranchiseApprovedSuppliers(franchiseGroupId: number): Promise<FranchiseApprovedSupplier[]> {
+    return db.select().from(franchiseApprovedSuppliers).where(eq(franchiseApprovedSuppliers.franchiseGroupId, franchiseGroupId));
+  }
+
+  async createFranchiseApprovedSupplier(data: InsertFranchiseApprovedSupplier): Promise<FranchiseApprovedSupplier> {
+    const [result] = await db.insert(franchiseApprovedSuppliers).values(data).returning();
+    return result;
+  }
+
+  async updateFranchiseApprovedSupplier(id: number, data: Partial<InsertFranchiseApprovedSupplier>): Promise<FranchiseApprovedSupplier> {
+    const [result] = await db.update(franchiseApprovedSuppliers).set(data).where(eq(franchiseApprovedSuppliers.id, id)).returning();
+    return result;
+  }
+
+  async deleteFranchiseApprovedSupplier(id: number): Promise<void> {
+    await db.delete(franchiseApprovedSuppliers).where(eq(franchiseApprovedSuppliers.id, id));
+  }
+
+  // ── Supplier Price Reports ───────────────────────────────────────────────────
+  async getSupplierPriceReports(franchiseGroupId: number): Promise<SupplierPriceReport[]> {
+    return db.select().from(supplierPriceReports).where(eq(supplierPriceReports.franchiseGroupId, franchiseGroupId));
+  }
+
+  async getRestaurantSupplierPriceReports(restaurantId: number): Promise<SupplierPriceReport[]> {
+    return db.select().from(supplierPriceReports).where(eq(supplierPriceReports.restaurantId, restaurantId));
+  }
+
+  async createSupplierPriceReport(data: InsertSupplierPriceReport): Promise<SupplierPriceReport> {
+    const [result] = await db.insert(supplierPriceReports).values(data).returning();
+    return result;
+  }
+
+  // ── Franchise Network Analytics ──────────────────────────────────────────────
+  async getFranchiseNetworkMonthlyData(franchiseGroupId: number): Promise<{ restaurant: Restaurant; monthlyData: MonthlyData[] }[]> {
+    const memberships = await db.select().from(franchiseMemberships).where(
+      and(eq(franchiseMemberships.franchiseGroupId, franchiseGroupId), eq(franchiseMemberships.isActive, true))
+    );
+    const result = [];
+    for (const membership of memberships) {
+      const [restaurant] = await db.select().from(restaurants).where(eq(restaurants.id, membership.restaurantId));
+      if (!restaurant) continue;
+      const data = await db.select().from(monthlyData).where(eq(monthlyData.restaurantId, membership.restaurantId));
+      result.push({ restaurant, monthlyData: data });
+    }
     return result;
   }
 }

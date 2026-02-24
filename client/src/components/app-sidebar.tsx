@@ -17,6 +17,9 @@ import {
   Brain,
   Star,
   Calculator,
+  CalendarRange,
+  Building2,
+  Network,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,6 +61,15 @@ const analysisNav = [
 const dataNav = [
   { title: "Add Data", url: "/app/add-data", icon: PlusCircle },
   { title: "Import Data", url: "/app/data-import", icon: FileSpreadsheet },
+];
+
+const comparisonNav = [
+  { title: "Period Comparison", url: "/app/performance-comparison", icon: CalendarRange },
+];
+
+const franchiseNav = [
+  { title: "Franchise Hub", url: "/app/franchise-hub", icon: Building2 },
+  { title: "Supplier Intelligence", url: "/app/supplier-intelligence", icon: Network },
 ];
 
 export function AppSidebar() {
@@ -111,6 +123,10 @@ export function AppSidebar() {
         <NavGroup label="Analysis" items={analysisNav} />
         <SidebarSeparator />
         <NavGroup label="Data" items={dataNav} />
+        <SidebarSeparator />
+        <NavGroup label="Comparisons" items={comparisonNav} />
+        <SidebarSeparator />
+        <NavGroup label="Franchise" items={franchiseNav} />
       </SidebarContent>
       <SidebarFooter className="p-4">
         <div className="text-xs text-muted-foreground">

@@ -29,6 +29,9 @@ import ExpenseIntelligence from "@/pages/expense-intelligence";
 import DrillDown from "@/pages/drill-down";
 import MenuEngineering from "@/pages/menu-engineering";
 import Breakeven from "@/pages/breakeven";
+import PerformanceComparison from "@/pages/performance-comparison";
+import FranchiseHub from "@/pages/franchise-hub";
+import SupplierIntelligence from "@/pages/supplier-intelligence";
 
 function AppRouter() {
   return (
@@ -51,6 +54,9 @@ function AppRouter() {
       <Route path="/app/add-data" component={AddData} />
       <Route path="/app/data-import" component={DataImport} />
       <Route path="/app/drill-down" component={DrillDown} />
+      <Route path="/app/performance-comparison" component={PerformanceComparison} />
+      <Route path="/app/franchise-hub" component={FranchiseHub} />
+      <Route path="/app/supplier-intelligence" component={SupplierIntelligence} />
       <Route component={NotFound} />
     </Switch>
   );
