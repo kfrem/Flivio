@@ -20,6 +20,8 @@ import {
   CalendarRange,
   Building2,
   Network,
+  PackageCheck,
+  Trash2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -65,6 +67,11 @@ const dataNav = [
 
 const comparisonNav = [
   { title: "Period Comparison", url: "/app/performance-comparison", icon: CalendarRange },
+];
+
+const inventoryNav = [
+  { title: "Stock Levels", url: "/app/inventory", icon: PackageCheck },
+  { title: "Waste Log", url: "/app/waste-log", icon: Trash2 },
 ];
 
 const franchiseNav = [
@@ -125,6 +132,8 @@ export function AppSidebar() {
         <NavGroup label="Data" items={dataNav} />
         <SidebarSeparator />
         <NavGroup label="Comparisons" items={comparisonNav} />
+        <SidebarSeparator />
+        <NavGroup label="Inventory & Waste" items={inventoryNav} />
         <SidebarSeparator />
         <NavGroup label="Franchise" items={franchiseNav} />
       </SidebarContent>

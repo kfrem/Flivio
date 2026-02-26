@@ -7,6 +7,7 @@ import {
   insertSupplierIngredientSchema, insertMenuItemSchema, insertMenuItemIngredientSchema,
   insertPromotionSchema, insertWeeklyDataSchema, insertFranchiseGroupSchema,
   insertFranchiseMembershipSchema, insertFranchiseApprovedSupplierSchema, insertSupplierPriceReportSchema,
+  insertInventoryItemSchema, insertWasteLogSchema,
   type MonthlyData,
 } from "@shared/schema";
 import { seedDatabase } from "./seed";
@@ -947,6 +948,142 @@ export async function registerRoutes(
       res.json({ intelligence, approvedSuppliers, myReports: Object.values(myLatestByIngredient) });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch supplier intelligence" });
+    }
+  });
+
+  // ── Inventory Items ────────────────────────────────────────────────────────
+  app.get("/api/inventory-items/:restaurantId", async (req, res) => {
+    try {
+      const restaurantId = parseInt(req.params.restaurantId);
+      if (isNaN(restaurantId)) return res.status(400).json({ message: "Invalid restaurant ID" });
+      const data = await storage.getInventoryItems(restaurantId);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch inventory items" });
+    }
+  });
+
+  app.post("/api/inventory-items", async (req, res) => {
+    try {
+      const parsed = insertInventoryItemSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+      const item = await storage.createInventoryItem(parsed.data);
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create inventory item" });
+    }
+  });
+
+  app.put("/api/inventory-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+      const item = await storage.updateInventoryItem(id, req.body);
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update inventory item" });
+    }
+  });
+
+  app.delete("/api/inventory-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+      await storage.deleteInventoryItem(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete inventory item" });
+    }
+  });
+
+  // ── Waste Logs ─────────────────────────────────────────────────────────────
+  app.get("/api/waste-logs/:restaurantId", async (req, res) => {
+    try {
+      const restaurantId = parseInt(req.params.restaurantId);
+      if (isNaN(restaurantId)) return res.status(400).json({ message: "Invalid restaurant ID" });
+      const data = await storage.getWasteLogs(restaurantId);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch waste logs" });
+    }
+  });
+
+  app.post("/api/waste-logs", async (req, res) => {
+    try {
+      const parsed = insertWasteLogSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid data", errors: parsed.error.errors });
+      const log = await storage.createWasteLog(parsed.data);
+      res.status(201).json(log);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create waste log" });
+    }
+  });
+
+  app.delete("/api/waste-logs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+      await storage.deleteWasteLog(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete waste log" });
+    }
+  });
+
+  // ── Waste Analytics (computed on the fly, no extra storage) ────────────────
+  app.get("/api/waste-analytics/:restaurantId", async (req, res) => {
+    try {
+      const restaurantId = parseInt(req.params.restaurantId);
+      if (isNaN(restaurantId)) return res.status(400).json({ message: "Invalid restaurant ID" });
+
+      const [logs, monthly] = await Promise.all([
+        storage.getWasteLogs(restaurantId),
+        storage.getMonthlyData(restaurantId),
+      ]);
+
+      const totalWasteCost = logs.reduce((sum, l) => sum + l.totalCost, 0);
+      const totalPurchases = monthly.reduce((sum, m) => sum + m.foodCost, 0);
+      const wastePercentage = totalPurchases > 0 ? (totalWasteCost / totalPurchases) * 100 : 0;
+
+      // By reason
+      const byReason: Record<string, { count: number; cost: number }> = {};
+      for (const log of logs) {
+        if (!byReason[log.reason]) byReason[log.reason] = { count: 0, cost: 0 };
+        byReason[log.reason].count++;
+        byReason[log.reason].cost += log.totalCost;
+      }
+
+      // By month
+      const byMonth: Record<string, number> = {};
+      for (const log of logs) {
+        const d = new Date(log.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        byMonth[key] = (byMonth[key] || 0) + log.totalCost;
+      }
+
+      // Top wasted items
+      const byItem: Record<string, { count: number; cost: number }> = {};
+      for (const log of logs) {
+        if (!byItem[log.itemName]) byItem[log.itemName] = { count: 0, cost: 0 };
+        byItem[log.itemName].count++;
+        byItem[log.itemName].cost += log.totalCost;
+      }
+      const topWastedItems = Object.entries(byItem)
+        .map(([name, data]) => ({ name, ...data }))
+        .sort((a, b) => b.cost - a.cost)
+        .slice(0, 10);
+
+      res.json({
+        totalWasteCost,
+        totalPurchases,
+        wastePercentage,
+        totalLogs: logs.length,
+        byReason: Object.entries(byReason).map(([reason, data]) => ({ reason, ...data })).sort((a, b) => b.cost - a.cost),
+        byMonth: Object.entries(byMonth).map(([month, cost]) => ({ month, cost })).sort((a, b) => a.month.localeCompare(b.month)),
+        topWastedItems,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to compute waste analytics" });
     }
   });
 

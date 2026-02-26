@@ -32,6 +32,8 @@ import Breakeven from "@/pages/breakeven";
 import PerformanceComparison from "@/pages/performance-comparison";
 import FranchiseHub from "@/pages/franchise-hub";
 import SupplierIntelligence from "@/pages/supplier-intelligence";
+import Inventory from "@/pages/inventory";
+import WasteLog from "@/pages/waste-log";
 
 function AppRouter() {
   return (
@@ -57,6 +59,8 @@ function AppRouter() {
       <Route path="/app/performance-comparison" component={PerformanceComparison} />
       <Route path="/app/franchise-hub" component={FranchiseHub} />
       <Route path="/app/supplier-intelligence" component={SupplierIntelligence} />
+      <Route path="/app/inventory" component={Inventory} />
+      <Route path="/app/waste-log" component={WasteLog} />
       <Route component={NotFound} />
     </Switch>
   );

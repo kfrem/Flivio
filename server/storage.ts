@@ -4,7 +4,7 @@ import {
   restaurants, monthlyData, costCategories, restaurantCostItems,
   suppliers, ingredients, supplierIngredients, menuItems, menuItemIngredients, promotions,
   users, weeklyData, franchiseGroups, franchiseMemberships, franchiseApprovedSuppliers,
-  supplierPriceReports, userRestaurantAccess,
+  supplierPriceReports, userRestaurantAccess, inventoryItems, wasteLogs,
   type Restaurant, type InsertRestaurant,
   type MonthlyData, type InsertMonthlyData,
   type CostCategory, type InsertCostCategory,
@@ -21,6 +21,8 @@ import {
   type FranchiseMembership, type InsertFranchiseMembership,
   type FranchiseApprovedSupplier, type InsertFranchiseApprovedSupplier,
   type SupplierPriceReport, type InsertSupplierPriceReport,
+  type InventoryItem, type InsertInventoryItem,
+  type WasteLog, type InsertWasteLog,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -110,6 +112,18 @@ export interface IStorage {
 
   // Franchise Network Analytics
   getFranchiseNetworkMonthlyData(franchiseGroupId: number): Promise<{ restaurant: Restaurant; monthlyData: MonthlyData[] }[]>;
+
+  // Inventory Items
+  getInventoryItems(restaurantId: number): Promise<InventoryItem[]>;
+  getInventoryItem(id: number): Promise<InventoryItem | undefined>;
+  createInventoryItem(data: InsertInventoryItem): Promise<InventoryItem>;
+  updateInventoryItem(id: number, data: Partial<InsertInventoryItem>): Promise<InventoryItem>;
+  deleteInventoryItem(id: number): Promise<void>;
+
+  // Waste Logs
+  getWasteLogs(restaurantId: number): Promise<WasteLog[]>;
+  createWasteLog(data: InsertWasteLog): Promise<WasteLog>;
+  deleteWasteLog(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -424,6 +438,44 @@ export class DatabaseStorage implements IStorage {
       result.push({ restaurant, monthlyData: data });
     }
     return result;
+  }
+
+  // ── Inventory Items ────────────────────────────────────────────────────────
+  async getInventoryItems(restaurantId: number): Promise<InventoryItem[]> {
+    return db.select().from(inventoryItems).where(eq(inventoryItems.restaurantId, restaurantId));
+  }
+
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    const [result] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
+    return result;
+  }
+
+  async createInventoryItem(data: InsertInventoryItem): Promise<InventoryItem> {
+    const [result] = await db.insert(inventoryItems).values(data).returning();
+    return result;
+  }
+
+  async updateInventoryItem(id: number, data: Partial<InsertInventoryItem>): Promise<InventoryItem> {
+    const [result] = await db.update(inventoryItems).set(data).where(eq(inventoryItems.id, id)).returning();
+    return result;
+  }
+
+  async deleteInventoryItem(id: number): Promise<void> {
+    await db.delete(inventoryItems).where(eq(inventoryItems.id, id));
+  }
+
+  // ── Waste Logs ─────────────────────────────────────────────────────────────
+  async getWasteLogs(restaurantId: number): Promise<WasteLog[]> {
+    return db.select().from(wasteLogs).where(eq(wasteLogs.restaurantId, restaurantId));
+  }
+
+  async createWasteLog(data: InsertWasteLog): Promise<WasteLog> {
+    const [result] = await db.insert(wasteLogs).values(data).returning();
+    return result;
+  }
+
+  async deleteWasteLog(id: number): Promise<void> {
+    await db.delete(wasteLogs).where(eq(wasteLogs.id, id));
   }
 }
 

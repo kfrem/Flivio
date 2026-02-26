@@ -246,6 +246,34 @@ export const supplierPriceReports = pgTable("supplier_price_reports", {
   reportedAt: timestamp("reported_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+// ── Inventory Items (stock tracking per ingredient) ──────────────────────────
+export const inventoryItems = pgTable("inventory_items", {
+  id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull(),
+  ingredientId: integer("ingredient_id").notNull(),
+  currentStock: real("current_stock").notNull().default(0),
+  parLevel: real("par_level").notNull().default(0),
+  unit: text("unit").notNull(),
+  storageLocation: text("storage_location").notNull().default("dry_store"), // walk_in, dry_store, freezer, bar
+  lastCountDate: timestamp("last_count_date"),
+  lastOrderDate: timestamp("last_order_date"),
+});
+
+// ── Waste Logs (track food waste events) ─────────────────────────────────────
+export const wasteLogs = pgTable("waste_logs", {
+  id: serial("id").primaryKey(),
+  restaurantId: integer("restaurant_id").notNull(),
+  ingredientId: integer("ingredient_id"),
+  itemName: text("item_name").notNull(),
+  quantity: real("quantity").notNull(),
+  unit: text("unit").notNull(),
+  costPerUnit: real("cost_per_unit").notNull(),
+  totalCost: real("total_cost").notNull(),
+  reason: text("reason").notNull(), // spoilage, overproduction, plate_waste, expired, dropped, other
+  date: timestamp("date").notNull().default(sql`CURRENT_TIMESTAMP`),
+  notes: text("notes"),
+});
+
 // ── User-Restaurant Access (multi-restaurant access control) ─────────────────
 export const userRestaurantAccess = pgTable("user_restaurant_access", {
   id: serial("id").primaryKey(),
@@ -261,6 +289,8 @@ export const insertFranchiseGroupSchema = createInsertSchema(franchiseGroups).om
 export const insertFranchiseMembershipSchema = createInsertSchema(franchiseMemberships).omit({ id: true, joinedAt: true });
 export const insertFranchiseApprovedSupplierSchema = createInsertSchema(franchiseApprovedSuppliers).omit({ id: true, createdAt: true });
 export const insertSupplierPriceReportSchema = createInsertSchema(supplierPriceReports).omit({ id: true, reportedAt: true });
+export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({ id: true });
+export const insertWasteLogSchema = createInsertSchema(wasteLogs).omit({ id: true, date: true });
 export const insertUserRestaurantAccessSchema = createInsertSchema(userRestaurantAccess).omit({ id: true, grantedAt: true });
 
 // Types
@@ -274,6 +304,10 @@ export type FranchiseApprovedSupplier = typeof franchiseApprovedSuppliers.$infer
 export type InsertFranchiseApprovedSupplier = z.infer<typeof insertFranchiseApprovedSupplierSchema>;
 export type SupplierPriceReport = typeof supplierPriceReports.$inferSelect;
 export type InsertSupplierPriceReport = z.infer<typeof insertSupplierPriceReportSchema>;
+export type InventoryItem = typeof inventoryItems.$inferSelect;
+export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
+export type WasteLog = typeof wasteLogs.$inferSelect;
+export type InsertWasteLog = z.infer<typeof insertWasteLogSchema>;
 export type UserRestaurantAccess = typeof userRestaurantAccess.$inferSelect;
 export type InsertUserRestaurantAccess = z.infer<typeof insertUserRestaurantAccessSchema>;
 
