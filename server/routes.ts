@@ -54,7 +54,11 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  await seedDatabase();
+  try {
+    await seedDatabase();
+  } catch (err) {
+    console.error("Seed warning (non-fatal):", err);
+  }
 
   app.get("/api/restaurants/current", async (_req, res) => {
     try {
