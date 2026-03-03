@@ -19,6 +19,9 @@ BRAND_MUTED = HexColor("#a0aec0")
 TEXT_DARK = HexColor("#2d3748")
 ACCENT = HexColor("#e53e3e")
 
+# Built once at import time — styles are static
+_STYLES = None
+
 
 def _build_styles():
     base = getSampleStyleSheet()
@@ -95,6 +98,13 @@ def _build_styles():
     }
 
 
+def _get_styles():
+    global _STYLES
+    if _STYLES is None:
+        _STYLES = _build_styles()
+    return _STYLES
+
+
 def generate_pdf_report(
     report_text: str,
     restaurant_name: str,
@@ -106,7 +116,9 @@ def generate_pdf_report(
     Generate a branded PDF from the markdown-style report text.
     Returns the output_path on success.
     """
-    os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else ".", exist_ok=True)
+    parent_dir = os.path.dirname(output_path)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
 
     doc = SimpleDocTemplate(
         output_path,
@@ -117,7 +129,7 @@ def generate_pdf_report(
         rightMargin=22 * mm,
     )
 
-    styles = _build_styles()
+    styles = _get_styles()
     story = []
 
     # Header

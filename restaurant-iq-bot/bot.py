@@ -35,7 +35,7 @@ from database import (
     register_restaurant,
     get_restaurant_by_group,
     register_staff,
-    get_staff,
+    get_or_register_staff,
     save_entry,
     get_week_entries,
     save_weekly_report,
@@ -54,6 +54,8 @@ REPORTS_DIR = "reports"
 VOICE_DIR = "voice_files"
 PHOTO_DIR = "photo_files"
 
+URGENCY_ICONS = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+
 for _d in [REPORTS_DIR, VOICE_DIR, PHOTO_DIR]:
     os.makedirs(_d, exist_ok=True)
 
@@ -63,13 +65,19 @@ for _d in [REPORTS_DIR, VOICE_DIR, PHOTO_DIR]:
 # ---------------------------------------------------------------------------
 
 def _ensure_staff(restaurant_id: int, user) -> dict:
-    """Auto-register a staff member if this is their first message."""
-    staff = get_staff(str(user.id), restaurant_id)
-    if not staff:
-        name = user.first_name or str(user.id)
-        register_staff(restaurant_id, str(user.id), name)
-        staff = get_staff(str(user.id), restaurant_id)
-    return staff
+    """Get or auto-register a staff member. Single INSERT OR IGNORE + SELECT."""
+    name = user.first_name or str(user.id)
+    return get_or_register_staff(restaurant_id, str(user.id), name)
+
+
+async def _require_restaurant(update: Update):
+    """Return the restaurant for this chat, or reply with an error and return None."""
+    chat_id = str(update.effective_chat.id)
+    restaurant = get_restaurant_by_group(chat_id)
+    if not restaurant:
+        await update.message.reply_text("Please /register this group first.")
+        return None
+    return restaurant
 
 
 # ---------------------------------------------------------------------------
@@ -117,10 +125,8 @@ async def cmd_register(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    restaurant = get_restaurant_by_group(chat_id)
+    restaurant = await _require_restaurant(update)
     if not restaurant:
-        await update.message.reply_text("Not registered yet. Use /register YourRestaurantName")
         return
 
     entries = get_week_entries(restaurant["id"])
@@ -146,10 +152,8 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_weekly_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    restaurant = get_restaurant_by_group(chat_id)
+    restaurant = await _require_restaurant(update)
     if not restaurant:
-        await update.message.reply_text("Not registered yet. Use /register YourRestaurantName")
         return
 
     entries = get_week_entries(restaurant["id"])
@@ -217,10 +221,8 @@ async def cmd_weekly_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ---------------------------------------------------------------------------
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    restaurant = get_restaurant_by_group(chat_id)
+    restaurant = await _require_restaurant(update)
     if not restaurant:
-        await update.message.reply_text("Please /register this group first.")
         return
 
     staff = _ensure_staff(restaurant["id"], update.effective_user)
@@ -252,7 +254,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         urgency = analysis.get("urgency", "low")
-        icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(urgency, "⚪")
+        icon = URGENCY_ICONS.get(urgency, "⚪")
         summary = analysis.get("summary", text[:100])
 
         await update.message.reply_text(
@@ -263,15 +265,15 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Urgency: {icon} {urgency}"
         )
     finally:
-        if os.path.exists(file_path):
+        try:
             os.remove(file_path)
+        except FileNotFoundError:
+            pass
 
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    restaurant = get_restaurant_by_group(chat_id)
+    restaurant = await _require_restaurant(update)
     if not restaurant:
-        await update.message.reply_text("Please /register this group first.")
         return
 
     staff = _ensure_staff(restaurant["id"], update.effective_user)
@@ -311,15 +313,15 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Added to your weekly briefing."
         )
     finally:
-        if os.path.exists(file_path):
+        try:
             os.remove(file_path)
+        except FileNotFoundError:
+            pass
 
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    restaurant = get_restaurant_by_group(chat_id)
+    restaurant = await _require_restaurant(update)
     if not restaurant:
-        # Silently ignore text in unregistered groups
         return
 
     text = update.message.text

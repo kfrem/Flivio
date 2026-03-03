@@ -13,13 +13,14 @@ from config import OLLAMA_MODEL, OLLAMA_TEXT_MODEL
 
 
 def _extract_json(text: str) -> dict:
-    """Pull the first valid JSON object out of a model response."""
+    """Pull the first valid JSON object out of a model response. Returns {} on failure."""
     try:
         start = text.index("{")
         end = text.rindex("}") + 1
         return json.loads(text[start:end])
     except (ValueError, json.JSONDecodeError):
         return {}
+
 
 
 def analyze_text_entry(text: str, restaurant_name: str = "") -> dict:
@@ -55,9 +56,9 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
             options={"temperature": 0.1, "num_predict": 400},
         )
         result = _extract_json(response.message.content)
-        if not result:
-            raise ValueError("Empty JSON")
-        return result
+        if result:
+            return result
+        raise ValueError("Empty JSON response from model")
     except Exception as e:
         print(f"Text analysis error: {e}")
         return {
@@ -107,9 +108,9 @@ Return ONLY valid JSON — no markdown, no explanation:
             options={"temperature": 0.1, "num_predict": 600},
         )
         result = _extract_json(response.message.content)
-        if not result:
-            raise ValueError("Empty JSON")
-        return result
+        if result:
+            return result
+        raise ValueError("Empty JSON response from model")
     except Exception as e:
         print(f"Invoice analysis error: {e}")
         return {
