@@ -45,3 +45,6 @@ vite.config.ts.timestamp-*
 .cache/
 temp/
 tmp/
+
+# Separate project — not part of Flivio
+restaurant-iq-bot/
